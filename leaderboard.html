@@ -1,0 +1,110 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section class="leaderboard-section">
+    <div class="leaderboard-container">
+        <h1>Skills Leaderboard</h1>
+        <p class="section-subtitle">Top candidates ranked by technical skills and profile completeness</p>
+
+        <div class="leaderboard-filters">
+            <input type="text" id="searchInput" placeholder="Search by name or email..." class="filter-input">
+            <select id="skillFilter" class="filter-select">
+                <option value="">All Skills</option>
+                <option value="Python">Python</option>
+                <option value="AI">AI & Machine Learning</option>
+                <option value="JavaScript">JavaScript</option>
+                <option value="Java">Java</option>
+                <option value="Web">Web Development</option>
+                <option value="Database">Database</option>
+                <option value="Cloud">Cloud & DevOps</option>
+            </select>
+        </div>
+
+        <div class="leaderboard-table-wrapper">
+            <table class="leaderboard-table">
+                <thead>
+                    <tr>
+                        <th>Rank</th>
+                        <th>Name</th>
+                        <th>Email</th>
+                        <th>Skills</th>
+                        <th>Skill Count</th>
+                        <th>Score</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% if leaderboard %}
+                        {% for candidate in leaderboard %}
+                        <tr class="leaderboard-row" data-name="{{ candidate.name }}" data-email="{{ candidate.email }}" data-skills="{{ candidate.skills }}">
+                            <td class="rank-cell">
+                                <span class="rank-badge rank-{{ loop.index }}">{{ loop.index }}</span>
+                            </td>
+                            <td>{{ candidate.name }}</td>
+                            <td>{{ candidate.email }}</td>
+                            <td>
+                                <div class="skills-tags">
+                                    {% for skill in candidate.skills.split(', ')[:3] %}
+                                    <span class="skill-tag">{{ skill }}</span>
+                                    {% endfor %}
+                                    {% if candidate.skills.split(', ')|length > 3 %}
+                                    <span class="skill-tag">+{{ candidate.skills.split(', ')|length - 3 }}</span>
+                                    {% endif %}
+                                </div>
+                            </td>
+                            <td class="skill-count">{{ candidate.skill_count }}</td>
+                            <td>
+                                <div class="score-bar">
+                                    <div class="score-fill" data-width="{{ (candidate.score|round(2)) }}"></div>
+                                </div>
+                                <span class="score-value">{{ ("%.1f"|format(candidate.score)) ~ '%' }}</span>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    {% else %}
+                    <tr>
+                        <td colspan="6" class="empty-state">No resumes uploaded yet. <a href="{{ url_for('upload') }}">Upload one now!</a></td>
+                    </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+
+        <div class="leaderboard-stats">
+            <div class="stat-box">
+                <h3>Total Candidates</h3>
+                <p>{{ leaderboard|length }}</p>
+            </div>
+            <div class="stat-box">
+                <h3>Average Skills per Candidate</h3>
+                <p>{{ "%.1f"|format(leaderboard|map(attribute='skill_count')|sum / (leaderboard|length or 1)) }}</p>
+            </div>
+            <div class="stat-box">
+                <h3>Highest Score</h3>
+                <p>{{ leaderboard[0].score|int if leaderboard else 0 }}%</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<script>
+document.getElementById('searchInput').addEventListener('keyup', filterTable);
+document.getElementById('skillFilter').addEventListener('change', filterTable);
+
+function filterTable() {
+    const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+    const skillFilter = document.getElementById('skillFilter').value;
+    const rows = document.querySelectorAll('.leaderboard-row');
+
+    rows.forEach(row => {
+        const name = row.dataset.name.toLowerCase();
+        const email = row.dataset.email.toLowerCase();
+        const skills = row.dataset.skills;
+
+        let matchSearch = name.includes(searchTerm) || email.includes(searchTerm);
+        let matchSkill = !skillFilter || skills.includes(skillFilter);
+
+        row.style.display = (matchSearch && matchSkill) ? '' : 'none';
+    });
+}
+</script>
+{% endblock %}

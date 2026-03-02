@@ -1,0 +1,167 @@
+{% extends "base.html" %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="hero">
+    <div class="hero-content">
+        <div class="hero-text">
+            <h1 class="hero-title">
+                <span class="gradient-text">AI-Powered Resume Parser</span>
+            </h1>
+            <p class="hero-subtitle">Extract insights from resumes instantly. Get job recommendations based on your skills.</p>
+            <div class="hero-buttons">
+                <a href="{{ url_for('upload') }}" class="btn btn-primary btn-lg">
+                    <i class="fas fa-upload"></i> Upload Resume
+                </a>
+                <a href="{{ url_for('leaderboard') }}" class="btn btn-secondary btn-lg">
+                    <i class="fas fa-trophy"></i> View Leaderboard
+                </a>
+            </div>
+        </div>
+        <div class="hero-image">
+            <div class="floating-card">
+                <div class="card-icon"><i class="fas fa-file-pdf"></i></div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Stats Section -->
+<section class="stats">
+    <div class="stats-container">
+        <div class="stat-card">
+            <div class="stat-number" data-count="{{ total_resumes }}">0</div>
+            <div class="stat-label">Resumes Analyzed</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number" data-count="1500">0</div>
+            <div class="stat-label">Skills Extracted</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number" data-count="98">0</div>
+            <div class="stat-label">Accuracy Rate</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number" data-count="50">0</div>
+            <div class="stat-label">Job Recommendations</div>
+        </div>
+    </div>
+</section>
+
+<!-- Features Section -->
+<section class="features">
+    <h2>Powerful Features</h2>
+    <div class="features-grid">
+        <div class="feature-card">
+            <div class="feature-icon">
+                <i class="fas fa-magic"></i>
+            </div>
+            <h3>Smart Extraction</h3>
+            <p>Automatically extract name, email, phone, skills, and education from PDFs using advanced NLP.</p>
+        </div>
+
+        <div class="feature-card">
+            <div class="feature-icon">
+                <i class="fas fa-briefcase"></i>
+            </div>
+            <h3>Job Recommendations</h3>
+            <p>Get personalized job role suggestions based on your detected skills and experience.</p>
+        </div>
+
+        <div class="feature-card">
+            <div class="feature-icon">
+                <i class="fas fa-chart-bar"></i>
+            </div>
+            <h3>Analytics Dashboard</h3>
+            <p>Track resume uploads, analyze skill trends, and view detailed charts and statistics.</p>
+        </div>
+
+        <div class="feature-card">
+            <div class="feature-icon">
+                <i class="fas fa-trophy"></i>
+            </div>
+            <h3>Skills Leaderboard</h3>
+            <p>Compete on the leaderboard ranked by technical skills and profile completeness.</p>
+        </div>
+
+        <div class="feature-card">
+            <div class="feature-icon">
+                <i class="fas fa-search"></i>
+            </div>
+            <h3>Advanced Search</h3>
+            <p>Search candidates by name, email, or specific skills with real-time filtering.</p>
+        </div>
+
+        <div class="feature-card">
+            <div class="feature-icon">
+                <i class="fas fa-download"></i>
+            </div>
+            <h3>Multiple Formats</h3>
+            <p>Export extracted data as JSON, CSV, or PDF for easy integration with other tools.</p>
+        </div>
+    </div>
+</section>
+
+<!-- How It Works -->
+<section class="how-it-works">
+    <h2>How It Works</h2>
+    <div class="steps-container">
+        <div class="step">
+            <div class="step-number">1</div>
+            <h3>Upload Resume</h3>
+            <p>Select a PDF resume from your computer</p>
+        </div>
+        <div class="step-arrow"><i class="fas fa-arrow-right"></i></div>
+        <div class="step">
+            <div class="step-number">2</div>
+            <h3>AI Analysis</h3>
+            <p>Our AI extracts key information</p>
+        </div>
+        <div class="step-arrow"><i class="fas fa-arrow-right"></i></div>
+        <div class="step">
+            <div class="step-number">3</div>
+            <h3>Get Results</h3>
+            <p>View recommendations instantly</p>
+        </div>
+        <div class="step-arrow"><i class="fas fa-arrow-right"></i></div>
+        <div class="step">
+            <div class="step-number">4</div>
+            <h3>Download</h3>
+            <p>Export data in your preferred format</p>
+        </div>
+    </div>
+</section>
+
+<!-- CTA Section -->
+<section class="cta">
+    <div class="cta-content">
+        <h2>Ready to Analyze Your Resume?</h2>
+        <p>Join {{ total_resumes }} students who have already analyzed their resumes</p>
+        <a href="{{ url_for('upload') }}" class="btn btn-primary btn-lg">
+            <i class="fas fa-rocket"></i> Get Started Now
+        </a>
+    </div>
+</section>
+
+<script>
+// Animate counter numbers
+document.addEventListener('DOMContentLoaded', function() {
+    const counters = document.querySelectorAll('[data-count]');
+    counters.forEach(counter => {
+        const target = parseInt(counter.dataset.count);
+        let current = 0;
+        const increment = target / 50;
+        
+        const timer = setInterval(() => {
+            current += increment;
+            if (current >= target) {
+                counter.textContent = target;
+                clearInterval(timer);
+            } else {
+                counter.textContent = Math.floor(current);
+            }
+        }, 30);
+    });
+});
+</script>
+{% endblock %}

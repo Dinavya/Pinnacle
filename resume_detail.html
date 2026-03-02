@@ -1,0 +1,155 @@
+{% extends "base.html" %}
+
+{% block title %}Resume Detail - {{ resume.name }}{% endblock %}
+
+{% block content %}
+<section class="resume-detail-section">
+    <div class="resume-detail-container">
+        <!-- Resume Header -->
+        <div class="resume-header">
+            <div class="resume-header-content">
+                <h1>{{ resume.name }}</h1>
+                <div class="resume-meta">
+                    <span class="meta-item">
+                        <i class="fas fa-envelope"></i>
+                        <a href="mailto:{{ resume.email }}">{{ resume.email }}</a>
+                    </span>
+                    {% if resume.phone %}
+                    <span class="meta-item">
+                        <i class="fas fa-phone"></i>
+                        {{ resume.phone }}
+                    </span>
+                    {% endif %}
+                    <span class="meta-item">
+                        <i class="fas fa-calendar"></i>
+                        Uploaded: {{ resume.uploaded_at.strftime('%B %d, %Y') }}
+                    </span>
+                </div>
+            </div>
+            <div class="resume-score">
+                <div class="score-circle">
+                    <div class="score-value">{{ "%.0f"|format(resume.score) }}</div>
+                    <div class="score-label">Score</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Resume Details Grid -->
+        <div class="resume-details-grid">
+            <!-- Education Section -->
+            {% if resume.education %}
+            <div class="detail-card">
+                <div class="detail-header">
+                    <h2><i class="fas fa-graduation-cap"></i> Education</h2>
+                </div>
+                <div class="detail-content">
+                    <p>{{ resume.education }}</p>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Experience Section -->
+            {% if resume.experience %}
+            <div class="detail-card">
+                <div class="detail-header">
+                    <h2><i class="fas fa-briefcase"></i> Experience</h2>
+                </div>
+                <div class="detail-content">
+                    <p>{{ resume.experience }}</p>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Skills Section -->
+            {% if resume.get_skills_list() %}
+            <div class="detail-card">
+                <div class="detail-header">
+                    <h2><i class="fas fa-code"></i> Skills</h2>
+                </div>
+                <div class="skills-container">
+                    {% for skill in resume.get_skills_list() %}
+                    <span class="skill-tag">{{ skill }}</span>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Job Recommendations Section -->
+        <div class="recommendations-section">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                <h2><i class="fas fa-graduation-cap"></i> Recommended Skills to Learn</h2>
+                <a href="{{ url_for('jobs') }}" class="btn btn-secondary btn-sm">
+                    <i class="fas fa-list"></i> View All Recommendations
+                </a>
+            </div>
+            
+            {% if jobs %}
+            <div class="skills-grid">
+                {% for job in jobs %}
+                <div class="skill-card">
+                    <div class="skill-header">
+                        <h3>{{ job.job_title }}</h3>
+                        <div class="match-score">
+                            <div class="score-badge"><i class="fas fa-star"></i> {{ "%.0f"|format(job.match_score or 0) }}</div>
+                        </div>
+                    </div>
+                    
+                    <div class="skill-content">
+                        <!-- Priority Bar -->
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="--fill-width: {{ job.match_score or 0 }}"></div>
+                        </div>
+
+                        <!-- Required For (Jobs) -->
+                        <div class="skill-subsection">
+                            <h4><i class="fas fa-briefcase"></i> Required for These Roles</h4>
+                            <div class="skills-list">
+                                {% set job_titles = job.required_skills | from_json %}
+                                {% if job_titles %}
+                                  {% for title in job_titles %}
+                                  <span class="skill-badge required">{{ title }}</span>
+                                  {% endfor %}
+                                {% else %}
+                                  <p class="text-muted">Multiple job roles</p>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <!-- Learning Path -->
+                        <div class="skill-subsection">
+                            <h4><i class="fas fa-book"></i> Learning Path</h4>
+                            <p class="suggestion-text">{{ job.learning_suggestions | from_json }}</p>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="empty-state">
+                <i class="fas fa-graduation-cap"></i>
+                <p>No skill recommendations at this time. You have strong coverage of in-demand skills!</p>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="action-buttons">
+            <a href="{{ url_for('download_resume', resume_id=resume.id, format='json') }}" class="btn btn-primary">
+                <i class="fas fa-download"></i> Download as JSON
+            </a>
+            <a href="{{ url_for('download_resume', resume_id=resume.id, format='csv') }}" class="btn btn-primary">
+                <i class="fas fa-download"></i> Download as CSV
+            </a>
+            <a href="{{ url_for('dashboard') }}" class="btn btn-secondary">
+                <i class="fas fa-arrow-left"></i> Back to Dashboard
+            </a>
+            <form method="POST" action="{{ url_for('delete_resume', resume_id=resume.id) }}" style="display: inline;" onsubmit="return confirm('Are you sure you want to delete this resume? This action cannot be undone.');">
+                <button type="submit" class="btn btn-danger">
+                    <i class="fas fa-trash"></i> Delete Resume
+                </button>
+            </form>
+        </div>
+    </div>
+</section>
+{% endblock %}

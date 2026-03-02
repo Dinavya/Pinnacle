@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section class="search-section">
+    <div class="search-container">
+        <h1>Search Candidates</h1>
+        
+        <form method="GET" class="search-form">
+            <div class="search-inputs">
+                <div class="input-group">
+                    <input type="text" name="q" placeholder="Search by name or email..." 
+                           value="{{ query }}" class="search-input">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-search"></i> Search
+                    </button>
+                </div>
+                <div class="input-group">
+                    <select name="skill" class="filter-select">
+                        <option value="">Filter by skill...</option>
+                        <option value="Python">Python</option>
+                        <option value="AI">AI & ML</option>
+                        <option value="JavaScript">JavaScript</option>
+                        <option value="Java">Java</option>
+                        <option value="Web">Web Development</option>
+                        <option value="Database">Database</option>
+                    </select>
+                </div>
+            </div>
+        </form>
+
+        <div class="search-results">
+            {% if results %}
+                <p class="results-count">Found <strong>{{ results|length }}</strong> candidate{{ 's' if results|length != 1 else '' }}</p>
+                <div class="results-grid">
+                    {% for resume in results %}
+                    <div class="result-card">
+                        <div class="result-header">
+                            <h3>{{ resume.name }}</h3>
+                            <span class="score-badge">{{ "%.0f"|format(resume.score) }}%</span>
+                        </div>
+                        <div class="result-info">
+                            <p><i class="fas fa-envelope"></i> {{ resume.email }}</p>
+                            <p><i class="fas fa-phone"></i> {{ resume.phone or 'N/A' }}</p>
+                        </div>
+                        <div class="result-skills">
+                            <strong>Skills:</strong>
+                            <div class="skills-tags">
+                                {% for skill in resume.get_skills_list()[:5] %}
+                                <span class="skill-tag">{{ skill }}</span>
+                                {% endfor %}
+                                {% if resume.get_skills_list()|length > 5 %}
+                                <span class="skill-tag">+{{ resume.get_skills_list()|length - 5 }}</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="result-actions">
+                            <a href="{{ url_for('view_resume', resume_id=resume.id) }}" class="btn btn-sm btn-primary">
+                                <i class="fas fa-eye"></i> View Details
+                            </a>
+                            <a href="{{ url_for('download_resume', resume_id=resume.id, format='json') }}" class="btn btn-sm btn-outline">
+                                <i class="fas fa-download"></i> Export
+                            </a>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="empty-state">
+                    <i class="fas fa-search"></i>
+                    <h3>{% if query or request.args.get('skill') %}No results found{% else %}Search for candidates{% endif %}</h3>
+                    <p>{% if query or request.args.get('skill') %}Try adjusting your search criteria{% else %}Enter a name, email, or filter by skill{% endif %}</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</section>
+{% endblock %}

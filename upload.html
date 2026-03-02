@@ -1,0 +1,103 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section class="upload-section">
+    <div class="upload-container">
+        <h1>Upload Your Resume</h1>
+        <p class="upload-subtitle">Upload a PDF resume to get instant AI analysis and job recommendations</p>
+
+        <div class="upload-form-wrapper">
+            <form method="POST" enctype="multipart/form-data" class="upload-form" id="resumeForm">
+                <div class="upload-area" id="uploadArea">
+                    <div class="upload-icon">
+                        <i class="fas fa-cloud-upload-alt"></i>
+                    </div>
+                    <h3>Drag and drop your PDF here</h3>
+                    <p>or click to select from your computer</p>
+                    <input type="file" name="file" id="fileInput" accept=".pdf" style="display: none;">
+                </div>
+
+                <div id="filePreview" style="display: none;" class="file-preview">
+                    <div class="preview-item">
+                        <i class="fas fa-file-pdf"></i>
+                        <span id="fileName">filename.pdf</span>
+                        <button type="button" class="btn-remove" id="removeFile">×</button>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-primary btn-lg" style="width: 100%;">
+                    <i class="fas fa-check"></i> Analyze Resume
+                </button>
+            </form>
+
+            <div class="upload-info">
+                <h3>Requirements:</h3>
+                <ul>
+                    <li><i class="fas fa-check-circle"></i> File format: PDF only</li>
+                    <li><i class="fas fa-check-circle"></i> Maximum file size: 100 MB</li>
+                    <li><i class="fas fa-check-circle"></i> Clear and readable text</li>
+                    <li><i class="fas fa-check-circle"></i> Contact information included</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</section>
+
+<script>
+const uploadArea = document.getElementById('uploadArea');
+const fileInput = document.getElementById('fileInput');
+const filePreview = document.getElementById('filePreview');
+const resumeForm = document.getElementById('resumeForm');
+
+// Click to upload
+uploadArea.addEventListener('click', () => fileInput.click());
+
+// Drag and drop
+uploadArea.addEventListener('dragover', (e) => {
+    e.preventDefault();
+    uploadArea.style.borderColor = '#6366f1';
+    uploadArea.style.backgroundColor = 'rgba(99, 102, 241, 0.1)';
+});
+
+uploadArea.addEventListener('dragleave', () => {
+    uploadArea.style.borderColor = '#e5e7eb';
+    uploadArea.style.backgroundColor = 'transparent';
+});
+
+uploadArea.addEventListener('drop', (e) => {
+    e.preventDefault();
+    uploadArea.style.borderColor = '#e5e7eb';
+    fileInput.files = e.dataTransfer.files;
+    handleFileSelect();
+});
+
+// File input change
+fileInput.addEventListener('change', handleFileSelect);
+
+function handleFileSelect() {
+    const file = fileInput.files[0];
+    if (file && file.type === 'application/pdf') {
+        document.getElementById('fileName').textContent = file.name;
+        filePreview.style.display = 'block';
+        uploadArea.style.display = 'none';
+    } else if (file) {
+        alert('Please select a PDF file');
+        fileInput.value = '';
+    }
+}
+
+document.getElementById('removeFile').addEventListener('click', () => {
+    fileInput.value = '';
+    filePreview.style.display = 'none';
+    uploadArea.style.display = 'block';
+});
+
+// Form submission
+resumeForm.addEventListener('submit', (e) => {
+    if (!fileInput.files[0]) {
+        e.preventDefault();
+        alert('Please select a file');
+    }
+});
+</script>
+{% endblock %}

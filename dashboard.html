@@ -1,0 +1,191 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section class="dashboard-section">
+    <div class="dashboard-container">
+        <h1>Analytics Dashboard</h1>
+
+        <!-- KPI Cards -->
+        <div class="kpi-grid">
+            <div class="kpi-card">
+                <div class="kpi-header">
+                    <h3>Total Resumes</h3>
+                    <i class="fas fa-file-pdf"></i>
+                </div>
+                <div class="kpi-value">{{ total_resumes }}</div>
+                <div class="kpi-change">+12% from last month</div>
+            </div>
+
+            <div class="kpi-card">
+                <div class="kpi-header">
+                    <h3>Unique Skills</h3>
+                    <i class="fas fa-code"></i>
+                </div>
+                <div class="kpi-value">{{ top_skills|length }}</div>
+                <div class="kpi-change">Skills identified</div>
+            </div>
+
+            <div class="kpi-card">
+                <div class="kpi-header">
+                    <h3>Most Common Skill</h3>
+                    <i class="fas fa-star"></i>
+                </div>
+                <div class="kpi-value">{{ top_skills[0][0] if top_skills else 'N/A' }}</div>
+                <div class="kpi-change">{{ top_skills[0][1] if top_skills else 0 }} candidates</div>
+            </div>
+
+            <div class="kpi-card">
+                <div class="kpi-header">
+                    <h3>Avg Skills/Resume</h3>
+                    <i class="fas fa-chart-line"></i>
+                </div>
+                <div class="kpi-value">{{ "%.1f"|format(top_skills|map(attribute=1)|sum / (total_resumes or 1)) }}</div>
+                <div class="kpi-change">Technical skills</div>
+            </div>
+
+            <div class="kpi-card">
+                <div class="kpi-header">
+                    <h3>Skill Recommendations</h3>
+                    <i class="fas fa-graduation-cap"></i>
+                </div>
+                <div class="kpi-value">Active</div>
+                <div class="kpi-change"><a href="{{ url_for('jobs') }}" style="color: #667eea; text-decoration: none;">View All</a></div>
+            </div>
+        </div>
+
+        <!-- Regenerate Recommendations Button -->
+        {% if total_resumes > 0 %}
+        <div style="margin-bottom: 2rem; text-align: center;">
+            <form method="POST" action="{{ url_for('regenerate_recommendations') }}" style="display: inline;">
+                <button type="submit" class="btn btn-secondary" title="Regenerate skill recommendations for all resumes">
+                    <i class="fas fa-sync-alt"></i> Regenerate Skill Recommendations
+                </button>
+            </form>
+        </div>
+        {% endif %}
+
+        <!-- Charts -->
+        <div class="charts-grid">
+            <div class="chart-container">
+                <h3>Top 10 Skills Distribution</h3>
+                <canvas id="skillsChart"></canvas>
+            </div>
+
+            <div class="chart-container">
+                <h3>Resume Upload Trend</h3>
+                <canvas id="trendChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Skills Table -->
+        <div class="skills-table-container">
+            <h3>Skills Breakdown</h3>
+            <table class="skills-table">
+                <thead>
+                    <tr>
+                        <th>Skill</th>
+                        <th>Count</th>
+                        <th>Percentage</th>
+                        <th>Trend</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for skill, count in top_skills %}
+                    <tr>
+                        <td><strong>{{ skill }}</strong></td>
+                        <td>{{ count }}</td>
+                        <td>
+                            <div class="percentage-bar">
+                                <div class="percentage-fill" data-width="{{ ((count / (top_skills[0][1] or 1)) * 100) | round(2) }}"></div>
+                                    <span>{{ ("%.1f"|format((count / (total_resumes or 1)) * 100)) ~ '%' }}</span>
+                            </div>
+                        </td>
+                        <td><span class="trend-badge trend-up"><i class="fas fa-arrow-up"></i></span></td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</section>
+
+<script>
+// Fetch dashboard data
+fetch('/api/dashboard-data')
+    .then(res => res.json())
+    .then(data => {
+        // Skills Chart
+        const skillsCtx = document.getElementById('skillsChart').getContext('2d');
+        new Chart(skillsCtx, {
+            type: 'bar',
+            data: {
+                labels: data.labels,
+                datasets: [{
+                    label: 'Number of Candidates',
+                    data: data.data,
+                    backgroundColor: [
+                        'rgba(99, 102, 241, 0.8)',
+                        'rgba(168, 85, 247, 0.8)',
+                        'rgba(59, 130, 246, 0.8)',
+                        'rgba(34, 197, 94, 0.8)',
+                        'rgba(239, 68, 68, 0.8)',
+                        'rgba(249, 115, 22, 0.8)',
+                        'rgba(14, 165, 233, 0.8)',
+                        'rgba(236, 72, 153, 0.8)',
+                        'rgba(84, 82, 255, 0.8)',
+                        'rgba(13, 148, 136, 0.8)',
+                    ],
+                    borderRadius: 8
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                plugins: {
+                    legend: { display: false }
+                },
+                scales: {
+                    y: { beginAtZero: true }
+                }
+            }
+        });
+
+        // Trend Chart - Resume Upload Trend
+        const trendCtx = document.getElementById('trendChart').getContext('2d');
+        new Chart(trendCtx, {
+            type: 'line',
+            data: {
+                labels: data.trend_display_labels,
+                datasets: [{
+                    label: 'Resumes Uploaded',
+                    data: data.trend_data,
+                    borderColor: 'rgb(99, 102, 241)',
+                    backgroundColor: 'rgba(99, 102, 241, 0.1)',
+                    tension: 0.4,
+                    fill: true,
+                    pointRadius: 4,
+                    pointBackgroundColor: 'rgb(99, 102, 241)',
+                    pointBorderColor: '#fff',
+                    pointBorderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                plugins: {
+                    legend: { display: true }
+                },
+                scales: {
+                    y: { 
+                        beginAtZero: true,
+                        ticks: { stepSize: 1 }
+                    }
+                }
+            }
+        });
+    })
+    .catch(error => {
+        console.error('Error loading dashboard data:', error);
+    });
+</script>
+{% endblock %}

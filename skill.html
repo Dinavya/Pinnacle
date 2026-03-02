@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section class="skills-section">
+    <div class="skills-container">
+        <h1><i class="fas fa-graduation-cap"></i> Skill Recommendations</h1>
+        <p class="section-subtitle">Skills to learn and develop based on candidate profiles</p>
+
+        <div class="skills-grid">
+            {% if recommendations %}
+                {% for item in recommendations[:20] %}
+                <div class=\"skill-card\">
+                    <div class="skill-header">
+                        <h3>{{ item.skill_name }}</h3>
+                        <span class="match-badge" data-bg="{{ '#10b981' if item.priority_score >= 80 else ('#f59e0b' if item.priority_score >= 60 else '#ef4444') }}">
+                            <i class="fas fa-star"></i> Priority: {{ item.priority_score }}
+                        </span>
+                    </div>
+
+                    <p class="skill-candidate">
+                        <strong>Candidate:</strong> {{ item.candidate }}<br>
+                        <small>{{ item.email }}</small>
+                    </p>
+
+                    <!-- Jobs Requiring This Skill -->
+                    {% if item.job_titles %}
+                    <div class="skill-subsection">
+                        <h5 style="margin-bottom: 0.5rem;"><i class="fas fa-briefcase"></i> Required for:</h5>
+                        <div class="skills-list" style="margin-bottom: 1rem;">
+                            {% for job in item.job_titles %}
+                            <span class="skill-badge required">{{ job }}</span>
+                            {% endfor %}
+                            {% if item.jobs_requiring > 3 %}
+                            <span class="skill-badge required">+{{ item.jobs_requiring - 3 }} more</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <!-- Learning Resource -->
+                    <div class="skill-subsection">
+                        <h5 style="margin-bottom: 0.5rem;"><i class="fas fa-book"></i> How to Learn:</h5>
+                        <p style="margin: 0; font-size: 0.9rem; line-height: 1.4;">{{ item.learning_resource }}</p>
+                    </div>
+
+                    <!-- Match Score Progress -->
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="--fill-width: {{ (item.priority_score or 0)|int }}%"></div>
+                    </div>
+
+                    <div class="skill-footer">
+                        <a href="{{ url_for('view_resume', resume_id=item.resume_id) }}" class="btn btn-sm btn-primary">
+                            <i class="fas fa-user"></i> View Profile
+                        </a>
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+            <div class="empty-state" style="grid-column: 1/-1;">
+                <i class="fas fa-graduation-cap"></i>
+                <h3>No Skill Recommendations Yet</h3>
+                <p>Skill recommendations will appear as resumes are uploaded and processed</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</section>
+{% endblock %}
